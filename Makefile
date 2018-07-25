@@ -1,28 +1,34 @@
 SHELL:=/bin/bash
 NXF_VER:=0.30.0
+PATHS_FILE:=variant_paths.txt
 EP:=
+
+all: run
 
 # ~~~~~ SETUP PIPELINE ~~~~~ #
 ./nextflow:
-	if [ "$$( module > /dev/null 2>&1; echo $$?)" -eq 0 ]; then module unload java && module load java/1.8 ; fi ; \
+	@if [ "$$( module > /dev/null 2>&1; echo $$?)" -eq 0 ]; then module unload java && module load java/1.8 ; fi ; \
 	export NXF_VER="$(NXF_VER)" && \
-	printf ">>> Installing Nextflow in the local directory" && \
+	echo ">>> Installing Nextflow in the local directory" && \
 	curl -fsSL get.nextflow.io | bash
 
 install: ./nextflow
 
 input:
-	unzip input.zip
+	@echo ">>> Unzipping input files" ; \
+	unzip -q input.zip
 
-variant_paths.txt: input
-	find input -mindepth 2 -type f -name "*data.tsv" > variant_paths.txt
-find: variant_paths.txt
+$(PATHS_FILE): input
+	@echo ">>> Saving list of file paths for processing" ; \
+	find input -mindepth 2 -type f -name "*data.tsv" > "$(PATHS_FILE)"
+find: $(PATHS_FILE)
 
 
 # ~~~~~ RUN ~~~~~ #
 run: install find
+	@echo ">>> Starting Nextflow workflow" ; \
 	if [ "$$( module > /dev/null 2>&1; echo $$?)" -eq 0 ]; then module unload java && module load java/1.8 ; fi ; \
-	./nextflow run main.nf -resume
+	./nextflow run main.nf -resume --input_tsvs "$(PATHS_FILE)"
 
 
 
@@ -51,7 +57,7 @@ clean: clean-logs clean-traces clean-reports clean-flowcharts
 # deletes all pipeline output in current directory
 clean-all: clean clean-output clean-work
 	rm -rf input
-	rm -f variant_paths.txt
+	rm -f "$(PATHS_FILE)"
 	[ -d .nextflow ] && mv .nextflow .nextflowold && rm -rf .nextflowold &
 	rm -f .nextflow.log
 	rm -f *.png

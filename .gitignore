@@ -2,3 +2,6 @@ work/
 output/
 nextflow
 inputold/
+.nextflow*
+input/
+variant_paths.txt
