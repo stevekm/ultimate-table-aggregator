@@ -59,4 +59,6 @@ gh	.	21	9	6	Sample6-data.tsv	2m4	34
 
 - GNU `make`, `bash`
 
+- Python 2.7+
+
 - Java 8 (for Nextflow)
