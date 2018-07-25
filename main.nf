@@ -45,6 +45,7 @@ process add_params {
     """
 }
 
+// Combine all tables into a single table
 process collect_tables {
     // output to the 'output' directory
     publishDir "${params.output_dir}", overwrite: true, mode: 'copy'
